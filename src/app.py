@@ -63,11 +63,11 @@ def add_member():
 
 @app.route('/member/<int:id>', methods=['DELETE'])
 def delete_member(id):
-    try:
+    try:        
         member = jackson_family.delete_member(id)
         if member is None:
             raise APIException("Member not found", status_code=404)
-        return jsonify(member), 200
+        return {"done": True}, 200
     except Exception as e:        
         return jsonify({"msg": "There was an error deleting the member, error: "+ str(e)}), 500
 
