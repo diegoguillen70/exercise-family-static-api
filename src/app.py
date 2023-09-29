@@ -26,17 +26,50 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
-
+def handle_hello():    
     # this is how you can use the Family datastructure by calling its methods
-    members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    try:
+        members = jackson_family.get_all_members()
+        return jsonify(members), 200
+    except Exception as e:        
+        return jsonify({"msg": "There was an error getting the members, error: "+ str(e)}), 500
+    
+@app.route('/member/<int:id>', methods=['GET'])
+def get_member(id):
+    try:
+        member = jackson_family.get_member(id)
+        if member is None:
+            raise APIException("Member not found", status_code=404)
+        return jsonify(member), 200
+    except Exception as e:        
+        return jsonify({"msg": "There was an error getting the member, error: "+ str(e)}), 500
+    
+@app.route('/member', methods=['POST'])
+def add_member():
+    try:
+        member = request.get_json()
+        if member is None:
+            raise APIException("You need to specify the request body as a json object", status_code=400)        
+        if member["first_name"] is None:
+            raise APIException("You need to specify the first_name", status_code=400)
+        if member["age"] is None:
+            raise APIException("You need to specify the age", status_code=400)
+        if member["lucky_numbers"] is None:
+            raise APIException("You need to specify the lucky_numbers", status_code=400)        
+        member = jackson_family.add_member(member)
+        return jsonify(member), 200
+    except Exception as e:        
+        return jsonify({"msg": "There was an error adding the member, error: "+ str(e)}), 500
 
-
-    return jsonify(response_body), 200
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_member(id):
+    try:
+        member = jackson_family.delete_member(id)
+        if member is None:
+            raise APIException("Member not found", status_code=404)
+        return jsonify(member), 200
+    except Exception as e:        
+        return jsonify({"msg": "There was an error deleting the member, error: "+ str(e)}), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
